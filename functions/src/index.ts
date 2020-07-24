@@ -165,35 +165,37 @@ export const aggregateData = functions
         })
         .concat(visitorsByMonth);
 
+      /**
+       * Delete the viewsByDate and topPages collections from Firestore before
+       * we update them again. This is done so prevent duplicity. I see no
+       * great way to update specific documents, at least not in a way
+       * that is this efficient.
+       */
       await deleteCollection(firestore, "viewsByDate", 50);
       await deleteCollection(firestore, "topPages", 50);
 
-      allVisitorData.forEach((day) => {
-        firestore
-          .collection("viewsByDate")
-          .add(day)
-          .then(() => {
-            console.log("View-by-date document written successfully.");
-          })
-          .catch((error) => {
-            console.error("Something went wrong: ", error);
-          });
+      /**
+       * Write both the visitors and top-page data.
+       */
+      const writeVisitorData = allVisitorData.map(async (day) => {
+        return await firestore.collection("viewsByDate").add(day);
       });
 
-      topPagesArr.forEach((page) => {
-        firestore
-          .collection("topPages")
-          .add(page)
-          .then(() => {
-            console.log("Top-page document written successfully.");
-          })
-          .catch((error) => {
-            console.error("Something went wrong: ", error);
-          });
+      const writeTopPageData = topPagesArr.map(async (page) => {
+        return await firestore.collection("topPages").add(page);
       });
 
-      console.log("Successfully aggregated the data!");
-      res.status(200).send("Successfully aggregated the data!");
+      /**
+       * Wait for all the promises to resolve, then return successful.
+       */
+      Promise.all([writeVisitorData, writeTopPageData])
+        .then(() => {
+          console.log("Successfully aggregated the data!");
+          res.status(200).send("Successfully aggregated the data!");
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
     } catch (err) {
       console.error("Failed to aggregate the data.", err);
       res.send("Failed to aggregate the data");

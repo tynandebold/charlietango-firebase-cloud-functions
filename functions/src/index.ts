@@ -238,7 +238,11 @@ async function deleteQueryBatch(
 
   // Recurse on the next process tick, to avoid
   // exploding the stack.
-  process.nextTick(() => {
-    deleteQueryBatch(db, query, resolve);
+  process.nextTick(async () => {
+    try {
+      await deleteQueryBatch(db, query, resolve);
+    } catch (error) {
+      console.error("Problem deleting documents. ", error);
+    }
   });
 }

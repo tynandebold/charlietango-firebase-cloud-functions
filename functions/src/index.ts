@@ -120,6 +120,10 @@ export const aggregateData = functions
       for (const key in dataByDateObj) {
         visitorsByDay.push({
           date: key,
+          internalPageViews:
+            dataByDateObj[key].ips.filter((i: any) => {
+              return i.ip === "80.62.20.6";
+            }).length || 0,
           totalPageViews: dataByDateObj[key].count,
           uniqueVisitorIps: [
             ...Array.from(
@@ -144,6 +148,7 @@ export const aggregateData = functions
         .map((item: VisitorsByDate[], month: string) => {
           return {
             date: month,
+            internalPageViews: sumBy(item, "internalPageViews"),
             totalPageViews: sumBy(item, "totalPageViews"),
             uniqueVisitorIps: item.reduce(
               (acc: VisitorsByDate[], curr: any) => {

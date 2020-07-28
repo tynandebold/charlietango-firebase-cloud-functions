@@ -122,7 +122,7 @@ export const aggregateData = functions
           date: key,
           internalPageViews:
             dataByDateObj[key].ips.filter((i: any) => {
-              return i.ip === "80.62.20.6";
+              return i === "80.62.20.6";
             }).length || 0,
           totalPageViews: dataByDateObj[key].count,
           uniqueVisitorIps: [
